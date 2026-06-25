@@ -41,3 +41,19 @@ app-example
 # generated native folders
 /ios
 /android
+
+
+# FastAPI virtual environment
+api-server/.venv/
+
+# Python cache
+api-server/__pycache__/
+api-server/**/__pycache__/
+api-server/**/*.pyc
+
+# FastAPI env / db
+api-server/.env
+api-server/.env.*
+
+api-server/*.db
+api-server/**/*.db
