@@ -1,9 +1,7 @@
 import Feather from "@expo/vector-icons/Feather";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Button,
   FlatList,
   Image,
   StyleSheet,
@@ -13,17 +11,23 @@ import {
   View,
 } from "react-native";
 
+type User = {
+  id: number;
+  name: string;
+  phone: string;
+  status: string;
+};
+
 const API_URL = "http://192.168.1.134:8000/members";
 
 export default function Profile() {
-  const router = useRouter();
   const [inviteCount, setInviteCount] = useState(0);
   const [searchText, setSearchText] = useState("");
-  const [users, setUsers] = useState([]);
+const [users, setUsers] = useState<User[]>([]);
 
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
-  const [editingId, setEditingId] = useState(null);
+const [editingId, setEditingId] = useState<number | null>(null);
 
   const loadMembers = () => {
     fetch(API_URL)
@@ -40,9 +44,11 @@ export default function Profile() {
     loadMembers();
   }, []);
 
-  const addMember = async () => {
-    try {
-      const response = await fetch("http://192.168.1.134:8000/members", {
+const addMember = async () => {
+  try {
+    const response = await fetch(
+      "http://192.168.1.134:8000/members",
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,40 +57,46 @@ export default function Profile() {
           name: newName,
           phone: newPhone,
         }),
-      });
+      }
+    );
 
-      const data = await response.json();
+    const data = await response.json();
 
-      console.log(data);
+    console.log(data);
 
-      alert("회원 추가 완료");
+    alert("회원 추가 완료");
 
-      loadMembers();
+    loadMembers();
 
-      setNewName("");
-      setNewPhone("");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const deleteMember = async (id) => {
-    try {
-      await fetch(`http://192.168.1.134:8000/members/${id}`, {
+    setNewName("");
+    setNewPhone("");
+  } catch (error) {
+    console.log(error);
+  }
+};
+ 
+const deleteMember = async (id: number) => {
+  try {
+    await fetch(
+      `http://192.168.1.134:8000/members/${id}`,
+      {
         method: "DELETE",
-      });
+      }
+    );
 
-      loadMembers();
+    loadMembers();
 
-      alert("삭제 완료");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    alert("삭제 완료");
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-  const updateMember = async () => {
-    try {
-      await fetch(`http://192.168.1.134:8000/members/${editingId}`, {
+const updateMember = async () => {
+  try {
+    await fetch(
+      `http://192.168.1.134:8000/members/${editingId}`,
+      {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -93,22 +105,23 @@ export default function Profile() {
           name: newName,
           phone: newPhone,
         }),
-      });
+      }
+    );
 
-      alert("수정 완료");
+    alert("수정 완료");
 
-      loadMembers();
+    loadMembers();
 
-      setEditingId(null);
-      setNewName("");
-      setNewPhone("");
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    setEditingId(null);
+    setNewName("");
+    setNewPhone("");
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   // 초대 토글 (normal ↔ invited)
-  const toggleInvite = (id) => {
+  const toggleInvite = (id: number) => {
     setUsers((prev) =>
       prev.map((user) => {
         if (user.id !== id) return user;
@@ -120,7 +133,7 @@ export default function Profile() {
           ...user,
           status: isInvited ? "normal" : "invited",
         };
-      }),
+      })
     );
 
     // 카운트 업데이트
@@ -128,7 +141,7 @@ export default function Profile() {
     if (!target || target.status === "joined") return;
 
     setInviteCount((prev) =>
-      target.status === "invited" ? prev - 1 : prev + 1,
+      target.status === "invited" ? prev - 1 : prev + 1
     );
   };
 
@@ -137,7 +150,8 @@ export default function Profile() {
     const keyword = searchText.toLowerCase();
 
     return (
-      user.name.toLowerCase().includes(keyword) || user.phone.includes(keyword)
+      user.name.toLowerCase().includes(keyword) ||
+      user.phone.includes(keyword)
     );
   });
 
@@ -152,10 +166,7 @@ export default function Profile() {
             {/* 헤더 */}
             <View style={styles.header}>
               <Text style={styles.title}>소셜</Text>
-              <Button
-                title="태연 페이지"
-                onPress={() => router.push("/taeyeon/startPage")}
-              />
+
               <View style={styles.countBox}>
                 <View style={styles.iconCircle}>
                   <MaterialCommunityIcons
@@ -186,42 +197,50 @@ export default function Profile() {
                 onChangeText={setSearchText}
               />
             </View>
-
+            
             <View style={{ marginTop: 20 }}>
-              <TextInput
-                placeholder="이름"
-                value={newName}
-                onChangeText={setNewName}
-                style={styles.input}
-              />
+  <TextInput
+    placeholder="이름"
+    value={newName}
+    onChangeText={setNewName}
+    style={styles.input}
+  />
 
-              <TextInput
-                placeholder="전화번호"
-                value={newPhone}
-                onChangeText={setNewPhone}
-                style={styles.input}
-              />
+  <TextInput
+    placeholder="전화번호"
+    value={newPhone}
+    onChangeText={setNewPhone}
+    style={styles.input}
+  />
 
-              <TouchableOpacity
-                onPress={editingId ? updateMember : addMember}
-                style={{
-                  backgroundColor: editingId ? "#2563EB" : "#EF4444",
-                  padding: 15,
-                  borderRadius: 10,
-                  marginTop: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "white",
-                    textAlign: "center",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {editingId ? "회원 수정" : "회원 추가"}
-                </Text>
-              </TouchableOpacity>
-            </View>
+  <TouchableOpacity
+  onPress={
+    editingId
+      ? updateMember
+      : addMember
+  }
+  style={{
+    backgroundColor: editingId
+      ? "#2563EB"
+      : "#EF4444",
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 10,
+  }}
+>
+  <Text
+    style={{
+      color: "white",
+      textAlign: "center",
+      fontWeight: "bold",
+    }}
+  >
+    {editingId
+      ? "회원 수정"
+      : "회원 추가"}
+  </Text>
+</TouchableOpacity>
+</View>
 
             {/* 배너 */}
             <Image
@@ -231,87 +250,88 @@ export default function Profile() {
           </>
         }
         renderItem={({ item: user }) => (
-          <View style={styles.listItem}>
-            <View>
-              <Text style={styles.name}>{user.name}</Text>
-              <Text style={styles.phone}>{user.phone}</Text>
-            </View>
+  <View style={styles.listItem}>
+    <View>
+      <Text style={styles.name}>{user.name}</Text>
+      <Text style={styles.phone}>{user.phone}</Text>
+    </View>
 
-            <View style={{ alignItems: "flex-end" }}>
-              {/* 초대 버튼 */}
-              <TouchableOpacity
-                onPress={() => toggleInvite(user.id)}
-                disabled={user.status === "joined"}
-                style={[
-                  styles.inviteBtn,
-                  user.status === "invited" && styles.invitedBtn,
-                  user.status === "joined" && styles.joinedBtn,
-                ]}
-              >
-                <Text
-                  style={
-                    user.status === "joined"
-                      ? styles.joinedText
-                      : user.status === "invited"
-                        ? styles.invitedText
-                        : styles.inviteText
-                  }
-                >
-                  {user.status === "joined"
-                    ? "가입됨"
-                    : user.status === "invited"
-                      ? "초대됨"
-                      : "초대하기"}
-                </Text>
-              </TouchableOpacity>
+    <View style={{ alignItems: "flex-end" }}>
+      {/* 초대 버튼 */}
+      <TouchableOpacity
+        onPress={() => toggleInvite(user.id)}
+        disabled={user.status === "joined"}
+        style={[
+          styles.inviteBtn,
+          user.status === "invited" && styles.invitedBtn,
+          user.status === "joined" && styles.joinedBtn,
+        ]}
+      >
+        <Text
+          style={
+            user.status === "joined"
+              ? styles.joinedText
+              : user.status === "invited"
+              ? styles.invitedText
+              : styles.inviteText
+          }
+        >
+          {user.status === "joined"
+            ? "가입됨"
+            : user.status === "invited"
+            ? "초대됨"
+            : "초대하기"}
+        </Text>
+      </TouchableOpacity>
 
-              {/* 삭제 버튼 */}
-              <TouchableOpacity
-                onPress={() => deleteMember(user.id)}
-                style={{
-                  marginTop: 8,
-                  backgroundColor: "#DC2626",
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderRadius: 8,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "bold",
-                  }}
-                >
-                  삭제
-                </Text>
-              </TouchableOpacity>
+      {/* 삭제 버튼 */}
+      <TouchableOpacity
+        onPress={() => deleteMember(user.id)}
+        style={{
+          marginTop: 8,
+          backgroundColor: "#DC2626",
+          paddingVertical: 6,
+          paddingHorizontal: 12,
+          borderRadius: 8,
+        }}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontWeight: "bold",
+          }}
+        >
+          삭제
+        </Text>
+      </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => {
-                  setEditingId(user.id);
-                  setNewName(user.name);
-                  setNewPhone(user.phone);
-                }}
-                style={{
-                  marginTop: 8,
-                  backgroundColor: "#2563EB",
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderRadius: 8,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "bold",
-                  }}
-                >
-                  수정
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
+      <TouchableOpacity
+  onPress={() => {
+    setEditingId(user.id);
+    setNewName(user.name);
+    setNewPhone(user.phone);
+  }}
+  style={{
+    marginTop: 8,
+    backgroundColor: "#2563EB",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  }}
+>
+  <Text
+    style={{
+      color: "#fff",
+      fontWeight: "bold",
+    }}
+  >
+    수정
+  </Text>
+</TouchableOpacity>
+
+    </View>
+  </View>
+)}
       />
     </View>
   );
@@ -434,10 +454,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   banner: {
-    width: "100%",
-    height: 120,
-    resizeMode: "cover",
-    borderRadius: 12,
-    marginTop: 15,
-  },
+  width: "100%",
+  height: 120,
+   resizeMode: "cover",
+  borderRadius: 12,
+  marginTop: 15,
+},
 });
